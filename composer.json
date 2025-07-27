@@ -3,7 +3,9 @@
     "description": "Sandbox code",
     "type": "project",
     "require": {
-        "phpcfdi/sat-ws-descarga-masiva": "^0.5"
+        "guzzlehttp/guzzle": "^7.0",
+        "phpcfdi/sat-ws-descarga-masiva": "^0.5",
+        "phpcfdi/cfditopdf": "dev-master"
     },
     "license": "MIT",
     "autoload": {
