@@ -1,0 +1,21 @@
+{
+    "name": "gogl92/algorithms",
+    "description": "Sandbox code",
+    "type": "project",
+    "require": {
+        "phpcfdi/sat-ws-descarga-masiva": "^0.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Gogl92\\Algorithms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Luis Gonzalez",
+            "email": "luisarmando1234@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
