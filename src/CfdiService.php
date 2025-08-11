@@ -23,6 +23,7 @@ use PhpCfdi\CfdiToPdf\Converter;
 use PhpCfdi\CfdiToPdf\Builders\Html2PdfBuilder;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CfdiService
 {
@@ -37,17 +38,22 @@ class CfdiService
 
     private function initializeFiel(): void
     {
-        $certPath = config('cfdi.cert_path', storage_path('certs/cer.cer'));
-        $keyPath = config('cfdi.key_path', storage_path('certs/key.key'));
+        $certDisk = config('cfdi.cert.disk', 'local');
+        $certPath = config('cfdi.cert.path', 'certs/cer.cer');
+        $keyDisk = config('cfdi.key.disk', 'local');
+        $keyPath = config('cfdi.key.path', 'certs/key.key');
         $password = config('cfdi.password', '');
 
-        if (!file_exists($certPath) || !file_exists($keyPath)) {
+        $certStorage = Storage::disk($certDisk);
+        $keyStorage = Storage::disk($keyDisk);
+
+        if (!$certStorage->exists($certPath) || !$keyStorage->exists($keyPath)) {
             throw new Exception('Certificate or key files not found');
         }
 
         $this->fiel = Fiel::create(
-            file_get_contents($certPath),
-            file_get_contents($keyPath),
+            $certStorage->get($certPath),
+            $keyStorage->get($keyPath),
             $password
         );
 

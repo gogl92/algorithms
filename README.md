@@ -18,6 +18,23 @@ Publish the configuration file:
 php artisan vendor:publish --tag=cfdi-config
 ```
 
+### Certificates and Private Keys
+
+The package reads your FIEL certificate and key using Laravel's storage
+disks, so the files can live on a secure, non-public disk. Configure the
+disk and path for each file in your `.env`:
+
+```
+CFDI_CERT_DISK=local
+CFDI_CERT_PATH=certs/cer.cer
+CFDI_KEY_DISK=local
+CFDI_KEY_PATH=certs/key.key
+CFDI_PASSWORD=your-password
+```
+
+Define any custom disks in `config/filesystems.php` to keep these
+high-risk files isolated from the public web root.
+
 ## Usage
 
 Use the provided facade to work with the service:

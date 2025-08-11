@@ -9,8 +9,14 @@ return [
     | Paths to your FIEL certificate files and password
     |
     */
-    'cert_path' => env('CFDI_CERT_PATH', storage_path('certs/cer.cer')),
-    'key_path' => env('CFDI_KEY_PATH', storage_path('certs/key.key')),
+    'cert' => [
+        'disk' => env('CFDI_CERT_DISK', 'local'),
+        'path' => env('CFDI_CERT_PATH', 'certs/cer.cer'),
+    ],
+    'key' => [
+        'disk' => env('CFDI_KEY_DISK', 'local'),
+        'path' => env('CFDI_KEY_PATH', 'certs/key.key'),
+    ],
     'password' => env('CFDI_PASSWORD', ''),
 
     /*
