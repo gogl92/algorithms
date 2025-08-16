@@ -1,7 +1,7 @@
 {
-    "name": "gogl92/algorithms",
-    "description": "Sandbox code",
-    "type": "project",
+    "name": "gogl92/cfdi-sat",
+    "description": "SAT CFDI integration for Laravel applications",
+    "type": "library",
     "require": {
         "guzzlehttp/guzzle": "^7.0",
         "phpcfdi/sat-ws-descarga-masiva": "^0.5",
@@ -10,7 +10,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Gogl92\\Algorithms\\": "src/"
+            "Gogl92\\CfdiSat\\": "src/"
         }
     },
     "authors": [
@@ -19,5 +19,16 @@
             "email": "luisarmando1234@gmail.com"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Gogl92\\CfdiSat\\CfdiServiceProvider"
+            ],
+            "aliases": {
+                "Cfdi": "Gogl92\\CfdiSat\\Facades\\Cfdi"
+            }
+        }
+    }
 }
