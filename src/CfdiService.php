@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Gogl92\CfdiSat;
+namespace Inquid\CfdiSat;
 
 use PhpCfdi\SatWsDescargaMasiva\RequestBuilder\FielRequestBuilder\Fiel;
 use PhpCfdi\SatWsDescargaMasiva\RequestBuilder\FielRequestBuilder\FielRequestBuilder;

@@ -9,7 +9,7 @@ Laravel patterns.
 Require the package via Composer:
 
 ```bash
-composer require gogl92/cfdi-sat
+composer require inquid/cfdi-sat
 ```
 
 Publish the configuration file:
@@ -37,15 +37,56 @@ high-risk files isolated from the public web root.
 
 ## Usage
 
+### Basic Example
+
 Use the provided facade to work with the service:
 
 ```php
-use Gogl92\CfdiSat\Facades\Cfdi;
+use Inquid\CfdiSat\Facades\Cfdi;
 
 $requestId = Cfdi::createConsulta('2025-01-01 00:00:00', '2025-01-31 23:59:59');
 ```
 
-See the `config/cfdi.php` file for available configuration options.
+### Complete Workflow
+
+```php
+use Inquid\CfdiSat\Facades\Cfdi;
+
+// Process complete workflow: create consulta, download, extract, and convert to PDF
+$result = Cfdi::processCompleteWorkflow('2025-01-01 00:00:00', '2025-01-31 23:59:59');
+
+if ($result['success']) {
+    echo "Workflow completed successfully!\n";
+    echo "- Packages downloaded: {$result['packages_downloaded']}\n";
+    echo "- XML files extracted: {$result['xml_files_extracted']}\n";
+    echo "- PDF files converted: {$result['pdf_files_converted']}\n";
+}
+```
+
+### Standalone Usage
+
+For non-Laravel applications, you can use the service directly:
+
+```php
+require_once 'vendor/autoload.php';
+
+use Inquid\CfdiSat\CfdiService;
+
+$cfdiService = new CfdiService();
+$requestId = $cfdiService->createConsulta('2025-01-01 00:00:00', '2025-01-31 23:59:59');
+```
+
+### Available Methods
+
+- `createConsulta()` - Create a new CFDI consultation
+- `checkConsultaStatus()` - Check the status of a consultation
+- `downloadPackages()` - Download CFDI packages
+- `extractXmlFromPackages()` - Extract XML files from packages
+- `convertXmlToPdf()` - Convert a single XML file to PDF
+- `convertXmlFolderToPdf()` - Convert all XML files in a folder to PDF
+- `processCompleteWorkflow()` - Complete end-to-end workflow
+
+See `src/ExampleUsage.php` for comprehensive examples and the `config/cfdi.php` file for available configuration options.
 
 ## License
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gogl92\CfdiSat;
+namespace Inquid\CfdiSat;
 
-use Gogl92\CfdiSat\CfdiService;
+use Inquid\CfdiSat\CfdiService;
 use Illuminate\Support\ServiceProvider;
 
 class CfdiServiceProvider extends ServiceProvider

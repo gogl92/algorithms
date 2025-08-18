@@ -1,265 +1,184 @@
 <?php
 
-namespace App\Examples;
+/**
+ * Example Usage of CfdiService
+ * 
+ * This file demonstrates how to use the CfdiService class for various CFDI operations.
+ * Make sure you have the required dependencies installed and configured.
+ */
 
-use App\Services\CfdiService;
-use Illuminate\Support\Facades\Log;
+require_once __DIR__ . '/../vendor/autoload.php';
 
-class ExampleUsage
+use Inquid\CfdiSat\CfdiService;
+
+// Example 1: Basic usage - Create a consulta and process it
+function exampleBasicWorkflow()
 {
-    private CfdiService $cfdiService;
-
-    public function __construct(CfdiService $cfdiService)
-    {
-        $this->cfdiService = $cfdiService;
-    }
-
-    /**
-     * Example 1: Create a consulta with basic parameters
-     */
-    public function createBasicConsulta(): string
-    {
-        try {
-            $requestId = $this->cfdiService->createConsulta(
-                '2025-01-01 00:00:00',
-                '2025-01-31 23:59:59'
-            );
-
-            Log::info("Consulta created successfully", ['request_id' => $requestId]);
-            return $requestId;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to create consulta", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 2: Create a consulta with all parameters
-     */
-    public function createAdvancedConsulta(): string
-    {
-        try {
-            $requestId = $this->cfdiService->createConsulta(
-                '2025-01-01 00:00:00',
-                '2025-01-31 23:59:59',
-                'received',           // downloadType
-                'active',             // documentStatus
-                'AAA010101AAA',       // rfcOnBehalf
-                'BBB020202BBB',       // rfcMatch
-                '12345678-1234-1234-1234-123456789012' // uuid
-            );
-
-            Log::info("Advanced consulta created", ['request_id' => $requestId]);
-            return $requestId;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to create advanced consulta", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 3: Check consulta status
-     */
-    public function checkStatus(string $requestId): array
-    {
-        try {
-            $status = $this->cfdiService->checkConsultaStatus($requestId);
+    try {
+        $cfdiService = new CfdiService();
+        
+        echo "=== Basic CFDI Workflow Example ===\n";
+        
+        // Create a consulta for a date range
+        $requestId = $cfdiService->createConsulta(
+            '2025-01-01 00:00:00',
+            '2025-01-31 23:59:59'
+        );
+        
+        echo "Consulta created with ID: {$requestId}\n";
+        
+        // Check status until ready
+        do {
+            $status = $cfdiService->checkConsultaStatus($requestId);
+            echo "Status: {$status['status_message']} (Code: {$status['status_code']})\n";
             
-            Log::info("Consulta status checked", [
-                'request_id' => $requestId,
-                'status' => $status
-            ]);
-
-            return $status;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to check status", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 4: Download packages
-     */
-    public function downloadPackages(string $requestId): array
-    {
-        try {
-            $result = $this->cfdiService->downloadPackages($requestId);
+            if ($status['is_ready']) {
+                echo "Consulta is ready! Found {$status['number_cfdis']} CFDIs in {$status['has_packages']} packages\n";
+                break;
+            }
             
-            Log::info("Packages downloaded", [
-                'request_id' => $requestId,
-                'downloaded_count' => count($result['downloaded']),
-                'errors_count' => count($result['errors'])
-            ]);
-
-            return $result;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to download packages", ['error' => $e->getMessage()]);
-            throw $e;
+            echo "Waiting 30 seconds before checking again...\n";
+            sleep(30);
+        } while (true);
+        
+        // Download and process packages
+        $result = $cfdiService->processCompleteWorkflow(
+            '2025-01-01 00:00:00',
+            '2025-01-31 23:59:59'
+        );
+        
+        if ($result['success']) {
+            echo "Workflow completed successfully!\n";
+            echo "- Packages downloaded: {$result['packages_downloaded']}\n";
+            echo "- XML files extracted: {$result['xml_files_extracted']}\n";
+            echo "- PDF files converted: {$result['pdf_files_converted']}\n";
+        } else {
+            echo "Workflow failed: {$result['message']}\n";
         }
+        
+    } catch (Exception $e) {
+        echo "Error: {$e->getMessage()}\n";
     }
+}
 
-    /**
-     * Example 5: Extract XML from packages
-     */
-    public function extractXml(array $packagePaths): array
-    {
-        try {
-            $result = $this->cfdiService->extractXmlFromPackages($packagePaths);
-            
-            Log::info("XML files extracted", [
-                'extracted_count' => count($result['extracted']),
-                'errors_count' => count($result['errors'])
-            ]);
-
-            return $result;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to extract XML", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 6: Convert single XML to PDF
-     */
-    public function convertSingleXml(string $xmlPath): string
-    {
-        try {
-            $pdfPath = $this->cfdiService->convertXmlToPdf($xmlPath);
-            
-            Log::info("XML converted to PDF", [
-                'xml_path' => $xmlPath,
-                'pdf_path' => $pdfPath
-            ]);
-
-            return $pdfPath;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to convert XML to PDF", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 7: Convert all XML files in a folder
-     */
-    public function convertXmlFolder(string $xmlFolder): array
-    {
-        try {
-            $result = $this->cfdiService->convertXmlFolderToPdf($xmlFolder);
-            
-            Log::info("XML folder converted to PDF", [
-                'folder' => $xmlFolder,
-                'converted_count' => count($result['converted']),
-                'errors_count' => count($result['errors'])
-            ]);
-
-            return $result;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to convert XML folder", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 8: Complete workflow
-     */
-    public function completeWorkflow(): array
-    {
-        try {
-            $result = $this->cfdiService->processCompleteWorkflow(
-                '2025-01-01 00:00:00',
-                '2025-01-31 23:59:59',
-                [
-                    'received',    // downloadType
-                    'active',      // documentStatus
-                    null,          // rfcOnBehalf
-                    null,          // rfcMatch
-                    null           // uuid
-                ]
-            );
-
-            Log::info("Complete workflow executed", $result);
-            return $result;
-
-        } catch (\Exception $e) {
-            Log::error("Complete workflow failed", ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
-    /**
-     * Example 9: Step-by-step workflow with status checking
-     */
-    public function stepByStepWorkflow(): array
-    {
-        try {
-            // Step 1: Create consulta
-            $requestId = $this->createBasicConsulta();
-            
-            // Step 2: Wait and check status (in real app, you might use a job queue)
-            $maxAttempts = 10;
-            $attempt = 0;
-            
-            do {
-                $status = $this->checkStatus($requestId);
-                $attempt++;
-                
-                if ($status['is_ready']) {
-                    break;
-                }
-                
-                if ($attempt >= $maxAttempts) {
-                    throw new \Exception("Consulta not ready after {$maxAttempts} attempts");
-                }
-                
-                // Wait 30 seconds before next check
-                sleep(30);
-                
-            } while (true);
-
+// Example 2: Step-by-step processing
+function exampleStepByStep()
+{
+    try {
+        $cfdiService = new CfdiService();
+        
+        echo "\n=== Step-by-Step Processing Example ===\n";
+        
+        // Step 1: Create consulta
+        $requestId = $cfdiService->createConsulta(
+            '2025-01-01 00:00:00',
+            '2025-01-31 23:59:59',
+            'received',  // download_type
+            'active'     // document_status
+        );
+        echo "Step 1: Consulta created - {$requestId}\n";
+        
+        // Step 2: Check status
+        $status = $cfdiService->checkConsultaStatus($requestId);
+        echo "Step 2: Status checked - {$status['status_message']}\n";
+        
+        if ($status['is_ready'] && $status['has_packages']) {
             // Step 3: Download packages
-            $downloadResult = $this->downloadPackages($requestId);
+            $downloadResult = $cfdiService->downloadPackages($requestId);
+            echo "Step 3: Packages downloaded - " . count($downloadResult['downloaded']) . " files\n";
             
-            if (empty($downloadResult['downloaded'])) {
-                throw new \Exception("No packages downloaded");
+            if (!empty($downloadResult['downloaded'])) {
+                // Step 4: Extract XML files
+                $extractResult = $cfdiService->extractXmlFromPackages($downloadResult['downloaded']);
+                echo "Step 4: XML files extracted - " . count($extractResult['extracted']) . " files\n";
+                
+                if (!empty($extractResult['extracted'])) {
+                    // Step 5: Convert to PDF
+                    $xmlFolder = dirname($extractResult['extracted'][0]);
+                    $convertResult = $cfdiService->convertXmlFolderToPdf($xmlFolder);
+                    echo "Step 5: PDF files created - " . count($convertResult['converted']) . " files\n";
+                }
             }
-
-            // Step 4: Extract XML
-            $extractResult = $this->extractXml($downloadResult['downloaded']);
-            
-            if (empty($extractResult['extracted'])) {
-                throw new \Exception("No XML files extracted");
-            }
-
-            // Step 5: Convert to PDF
-            $xmlFolder = dirname($extractResult['extracted'][0]);
-            $convertResult = $this->convertXmlFolder($xmlFolder);
-
-            return [
-                'success' => true,
-                'request_id' => $requestId,
-                'packages_downloaded' => count($downloadResult['downloaded']),
-                'xml_files_extracted' => count($extractResult['extracted']),
-                'pdf_files_converted' => count($convertResult['converted']),
-                'errors' => array_merge(
-                    $downloadResult['errors'],
-                    $extractResult['errors'],
-                    $convertResult['errors']
-                )
-            ];
-
-        } catch (\Exception $e) {
-            Log::error("Step-by-step workflow failed", ['error' => $e->getMessage()]);
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
         }
+        
+    } catch (Exception $e) {
+        echo "Error: {$e->getMessage()}\n";
     }
+}
+
+// Example 3: Convert existing XML files to PDF
+function exampleConvertExistingXml()
+{
+    try {
+        $cfdiService = new CfdiService();
+        
+        echo "\n=== Convert Existing XML Files Example ===\n";
+        
+        // Specify the folder containing XML files
+        $xmlFolder = '/path/to/your/xml/files';
+        
+        if (is_dir($xmlFolder)) {
+            $result = $cfdiService->convertXmlFolderToPdf($xmlFolder);
+            
+            if (!empty($result['converted'])) {
+                echo "Successfully converted " . count($result['converted']) . " XML files to PDF:\n";
+                foreach ($result['converted'] as $pdfFile) {
+                    echo "- {$pdfFile}\n";
+                }
+            }
+            
+            if (!empty($result['errors'])) {
+                echo "Errors encountered:\n";
+                foreach ($result['errors'] as $error) {
+                    echo "- {$error}\n";
+                }
+            }
+        } else {
+            echo "XML folder not found: {$xmlFolder}\n";
+        }
+        
+    } catch (Exception $e) {
+        echo "Error: {$e->getMessage()}\n";
+    }
+}
+
+// Example 4: Custom configuration
+function exampleWithCustomConfig()
+{
+    try {
+        // Note: In a Laravel application, you would configure this in config/cfdi.php
+        // For standalone usage, you might need to set environment variables or modify the service
+        
+        $cfdiService = new CfdiService();
+        
+        echo "\n=== Custom Configuration Example ===\n";
+        echo "This example shows how to use the service with custom configuration.\n";
+        echo "In a Laravel app, configure paths in config/cfdi.php:\n";
+        echo "- cert.disk: Storage disk for certificates\n";
+        echo "- cert.path: Path to .cer file\n";
+        echo "- key.disk: Storage disk for private keys\n";
+        echo "- key.path: Path to .key file\n";
+        echo "- download_folder: Folder for downloaded packages\n";
+        echo "- xml_folder: Folder for extracted XML files\n";
+        echo "- pdf_folder: Folder for generated PDF files\n";
+        
+    } catch (Exception $e) {
+        echo "Error: {$e->getMessage()}\n";
+    }
+}
+
+// Run examples
+if (php_sapi_name() === 'cli') {
+    echo "CFDI Service Examples\n";
+    echo "===================\n\n";
+    
+    exampleBasicWorkflow();
+    exampleStepByStep();
+    exampleConvertExistingXml();
+    exampleWithCustomConfig();
+    
+    echo "\nExamples completed!\n";
+} else {
+    echo "This file is designed to be run from the command line.\n";
+    echo "Run: php src/ExampleUsage.php\n";
 } 

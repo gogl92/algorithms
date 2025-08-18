@@ -1,6 +1,6 @@
 <?php
 
-namespace Gogl92\CfdiSat\Facades;
+namespace Inquid\CfdiSat\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

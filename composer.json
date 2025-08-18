@@ -1,5 +1,5 @@
 {
-    "name": "gogl92/cfdi-sat",
+    "name": "inquid/cfdi-sat",
     "description": "SAT CFDI integration for Laravel applications",
     "type": "library",
     "require": {
@@ -10,7 +10,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Gogl92\\CfdiSat\\": "src/"
+            "Inquid\\CfdiSat\\": "src/"
         }
     },
     "authors": [
@@ -24,10 +24,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Gogl92\\CfdiSat\\CfdiServiceProvider"
+                "Inquid\\CfdiSat\\CfdiServiceProvider"
             ],
             "aliases": {
-                "Cfdi": "Gogl92\\CfdiSat\\Facades\\Cfdi"
+                "Cfdi": "Inquid\\CfdiSat\\Facades\\Cfdi"
             }
         }
     }
